@@ -31,7 +31,7 @@ export default function CustomerLedger() {
   const [busy, setBusy] = useState(false);
 
   if (error) return <ErrorText>{error}</ErrorText>;
-  if (!data) return <p className="text-slate-500">{t("loading")}</p>;
+  if (!data) return <div className="py-8 text-center text-slate-500">{t("loading")}</div>;
   const c = data.customer;
   const open = (dueDocs ?? []).filter((d) => d.status !== "void" && d.due_paisa > 0).reverse(); // oldest first
 
@@ -57,29 +57,31 @@ export default function CustomerLedger() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={<span className="flex items-center gap-2">{c.name} <Badge value={c.type} /></span>}
-        actions={<>
-          {can("payments.write") && <Button onClick={() => { setErr(null); setForm({ amount: "", method: "cash", reference: "", document: open[0] ? String(open[0].id) : "" }); setPaying(true); }}>{t("receive_payment")}</Button>}
-          {can("customers.write") && <Button variant="secondary" onClick={() => setEditing(true)}>{t("edit")}</Button>}
-        </>}
+        title={<span className="flex flex-wrap items-center gap-2"><span>{c.name}</span> <Badge value={c.type} /></span>}
+        actions={
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {can("payments.write") && <Button className="flex-1 sm:flex-initial text-xs sm:text-sm" onClick={() => { setErr(null); setForm({ amount: "", method: "cash", reference: "", document: open[0] ? String(open[0].id) : "" }); setPaying(true); }}>💰 {t("receive_payment")}</Button>}
+            {can("customers.write") && <Button variant="secondary" className="flex-1 sm:flex-initial text-xs sm:text-sm" onClick={() => setEditing(true)}>{t("edit")}</Button>}
+          </div>
+        }
       />
-      <div className="grid gap-3 sm:grid-cols-4">
-        <Card><div className="text-xs text-slate-500">{t("phone")}</div><div className="font-medium">{c.phone ?? "—"}</div><div className="text-xs text-slate-500">{c.address}</div></Card>
-        <Card><div className="text-xs text-slate-500">{t("credit_limit")}</div><div className="text-lg font-semibold">{money(c.credit_limit_paisa)}</div></Card>
-        <Card><div className="text-xs text-slate-500">{t("opening_balance")}</div><div className="text-lg font-semibold">{money(data.opening_balance_paisa)}</div></Card>
-        <Card><div className="text-xs text-slate-500">{t("balance")}</div><div className={`text-lg font-semibold ${data.balance_paisa > 0 ? "text-red-600" : "text-emerald-700"}`}>{money(data.balance_paisa)}</div></Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card><div className="text-xs text-slate-500">{t("phone")}</div><div className="font-semibold text-slate-900 truncate">{c.phone ?? "—"}</div><div className="text-xs text-slate-500 truncate">{c.address}</div></Card>
+        <Card><div className="text-xs text-slate-500">{t("credit_limit")}</div><div className="text-base sm:text-lg font-bold text-slate-900">{money(c.credit_limit_paisa)}</div></Card>
+        <Card><div className="text-xs text-slate-500">{t("opening_balance")}</div><div className="text-base sm:text-lg font-bold text-slate-900">{money(data.opening_balance_paisa)}</div></Card>
+        <Card><div className="text-xs text-slate-500">{t("balance")}</div><div className={`text-base sm:text-lg font-bold ${data.balance_paisa > 0 ? "text-red-600" : "text-emerald-700"}`}>{money(data.balance_paisa)}</div></Card>
       </div>
 
       <Card title={t("ledger")}>
         <Table head={[t("date"), t("type"), t("number"), t("debit"), t("credit_col"), t("balance")]} empty={data.entries.length === 0}>
           {data.entries.map((e, i) => (
             <tr key={i}>
-              <td className={td}>{dt(e.at)}</td>
-              <td className={td}>{tv(KIND_LABEL[e.kind] ?? e.kind)}{e.note && <div className="text-xs text-slate-500">{e.note}</div>}</td>
-              <td className={td}>{e.document_id ? <Link className="text-brand-700" to={`/documents/${e.document_id}`}>{e.ref}</Link> : "—"}</td>
-              <td className={tdNum}>{e.debit_paisa ? money(e.debit_paisa) : ""}</td>
-              <td className={tdNum}>{e.credit_paisa ? money(e.credit_paisa) : ""}</td>
-              <td className={`${tdNum} font-medium`}>{money(e.balance_paisa)}</td>
+              <td className={td}><span className="text-xs sm:text-sm">{dt(e.at)}</span></td>
+              <td className={td}><span className="font-medium text-slate-900">{tv(KIND_LABEL[e.kind] ?? e.kind)}</span>{e.note && <div className="text-xs text-slate-500">{e.note}</div>}</td>
+              <td className={td}>{e.document_id ? <Link className="font-medium text-brand-700 hover:underline" to={`/documents/${e.document_id}`}>{e.ref}</Link> : "—"}</td>
+              <td className={`${tdNum} text-slate-900`}>{e.debit_paisa ? money(e.debit_paisa) : ""}</td>
+              <td className={`${tdNum} text-emerald-700 font-medium`}>{e.credit_paisa ? money(e.credit_paisa) : ""}</td>
+              <td className={`${tdNum} font-bold text-slate-900`}>{money(e.balance_paisa)}</td>
             </tr>
           ))}
         </Table>
@@ -94,7 +96,7 @@ export default function CustomerLedger() {
             <option value="">{t("none")} ({t("balance")})</option>
           </Select>
         </Field>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label={t("amount")}><Input inputMode="decimal" autoFocus value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></Field>
           <Field label={t("method")}>
             <Select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value })}>
@@ -102,7 +104,9 @@ export default function CustomerLedger() {
             </Select>
           </Field>
         </div>
-        <Field label={t("reference")}><Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} /></Field>
+        <Field label={`${t("reference")} (${t("optional")})`}>
+          <Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} />
+        </Field>
         <ErrorText>{err}</ErrorText>
       </Modal>
     </div>

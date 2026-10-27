@@ -50,21 +50,21 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title={t("settings")} actions={editable && <Button onClick={save}>{t("save")}</Button>} />
-      {msg && <p className="text-sm text-emerald-700">{msg}</p>}
+      <PageHeader title={t("settings")} actions={editable && <Button className="w-full sm:w-auto" onClick={save}>💾 {t("save")}</Button>} />
+      {msg && <p className="text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 p-3 rounded-lg">✓ {msg}</p>}
       <ErrorText>{err}</ErrorText>
-      <Card title={t("business_info")}><div className="grid gap-3 sm:grid-cols-2">{BUSINESS.map(input)}</div></Card>
-      <Card title={t("numbering")}><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{NUMBERING.map(input)}</div></Card>
+      <Card title={t("business_info")}><div className="grid gap-3 grid-cols-1 sm:grid-cols-2">{BUSINESS.map(input)}</div></Card>
+      <Card title={t("numbering")}><div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">{NUMBERING.map(input)}</div></Card>
       <Card title={t("thresholds")}>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 items-center">
           <Field label={t("discount_limit" as TKey)}>
             <Input disabled={!editable} inputMode="decimal" value={form.discount_approval_percent ?? ""}
               onChange={(e) => setForm({ ...form, discount_approval_percent: e.target.value })} />
           </Field>
-          <label className="flex items-center gap-2 self-end pb-2 text-sm">
+          <label className="flex items-center gap-2 pt-2 sm:pt-4 text-sm text-slate-700">
             <input type="checkbox" disabled={!editable} checked={form.allow_negative_stock === "true"}
-              onChange={(e) => setForm({ ...form, allow_negative_stock: e.target.checked ? "true" : "false" })} />
-            {t("allow_negative_stock")}
+              onChange={(e) => setForm({ ...form, allow_negative_stock: e.target.checked ? "true" : "false" })} className="rounded" />
+            <span className="font-medium">{t("allow_negative_stock")}</span>
           </label>
         </div>
       </Card>

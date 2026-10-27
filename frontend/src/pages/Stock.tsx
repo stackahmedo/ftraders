@@ -58,7 +58,7 @@ export default function Stock() {
                   {products?.map((p) => <option key={p.id} value={p.id}>{name(p)} ({qty(p.stock_milli)} {tv(p.unit)})</option>)}
                 </Select>
               </Field>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <Field label={t("type")}>
                   <Select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
                     {TYPES.map((x) => <option key={x} value={x}>{t(x)}</option>)}
@@ -75,8 +75,8 @@ export default function Stock() {
                 <Input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} />
               </Field>
               <ErrorText>{err}</ErrorText>
-              {ok && <p className="text-sm text-emerald-700">{ok}</p>}
-              <Button className="w-full" onClick={submit}
+              {ok && <p className="text-sm font-medium text-emerald-700 bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">✓ {ok}</p>}
+              <Button className="w-full py-2.5 font-semibold" onClick={submit}
                 disabled={busy || !form.product || q === null || q === 0 || (needsReason && !form.reason.trim())}>
                 {t("save")}
               </Button>
@@ -87,9 +87,9 @@ export default function Stock() {
           <Table head={[t("item"), t("sku"), t("in_stock"), t("low_stock_level")]} empty={low?.length === 0}>
             {low?.map((p) => (
               <tr key={p.product_id}>
-                <td className={td}>{name(p)}</td>
-                <td className={td}>{p.sku}</td>
-                <td className={`${tdNum} ${p.stock_milli <= 0 ? "font-semibold text-red-600" : "text-amber-700"}`}>{qty(p.stock_milli)} {tv(p.unit)}</td>
+                <td className={td}><span className="font-semibold text-slate-900">{name(p)}</span></td>
+                <td className={td}><span className="font-mono text-xs text-slate-600">{p.sku}</span></td>
+                <td className={`${tdNum} ${p.stock_milli <= 0 ? "font-bold text-red-600" : "font-semibold text-amber-700"}`}>{qty(p.stock_milli)} {tv(p.unit)}</td>
                 <td className={tdNum}>{qty(p.low_stock_milli)}</td>
               </tr>
             ))}
@@ -98,21 +98,23 @@ export default function Stock() {
       </div>
 
       <Card title={t("movements")} actions={
-        <Select className="w-56" value={productFilter} onChange={(e) => setProductFilter(e.target.value)}>
-          <option value="">{t("all")}</option>
-          {products?.map((p) => <option key={p.id} value={p.id}>{name(p)}</option>)}
-        </Select>
+        <div className="w-full sm:w-64">
+          <Select value={productFilter} onChange={(e) => setProductFilter(e.target.value)}>
+            <option value="">{t("all")}</option>
+            {products?.map((p) => <option key={p.id} value={p.id}>{name(p)}</option>)}
+          </Select>
+        </div>
       }>
         <Table head={[t("date"), t("item"), t("type"), t("qty"), t("number"), t("reason"), t("prepared_by")]} empty={moves?.length === 0}>
           {moves?.map((m) => (
             <tr key={m.id}>
-              <td className={td}>{dt(m.created_at)}</td>
-              <td className={td}>{m.product_name}</td>
+              <td className={td}><span className="text-xs sm:text-sm">{dt(m.created_at)}</span></td>
+              <td className={td}><span className="font-medium text-slate-900">{m.product_name}</span></td>
               <td className={td}>{tv(m.type)}</td>
-              <td className={`${tdNum} ${m.qty_milli < 0 ? "text-red-600" : "text-emerald-700"}`}>{m.qty_milli > 0 ? "+" : ""}{qty(m.qty_milli)} {tv(m.unit)}</td>
-              <td className={td}>{m.document_id ? <Link className="text-brand-700" to={`/documents/${m.document_id}`}>{m.document_number}</Link> : m.reference}</td>
-              <td className={`${td} max-w-xs truncate`}>{m.reason}</td>
-              <td className={td}>{m.user_name}</td>
+              <td className={`${tdNum} font-bold ${m.qty_milli < 0 ? "text-red-600" : "text-emerald-700"}`}>{m.qty_milli > 0 ? "+" : ""}{qty(m.qty_milli)} {tv(m.unit)}</td>
+              <td className={td}>{m.document_id ? <Link className="font-medium text-brand-700 hover:underline" to={`/documents/${m.document_id}`}>{m.document_number}</Link> : <span className="text-slate-500">{m.reference || "—"}</span>}</td>
+              <td className={`${td} max-w-xs truncate text-xs text-slate-600`}>{m.reason || "—"}</td>
+              <td className={td}><span className="text-xs sm:text-sm">{m.user_name}</span></td>
             </tr>
           ))}
         </Table>

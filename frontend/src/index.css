@@ -6,7 +6,38 @@ html[lang="bn"] body {
   font-family: "Noto Sans Bengali", Inter, system-ui, sans-serif;
 }
 
-/* bigger tap targets on phones */
+/* Touch targets and mobile viewport improvements */
 @media (max-width: 640px) {
-  input, select, button { min-height: 40px; }
+  input, select, button {
+    min-height: 42px;
+  }
+}
+
+/* Safe area support for mobile bottom nav and notch devices */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4.5rem);
+}
+
+.bottom-safe {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Custom smooth scrollbar for horizontal table scroll */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

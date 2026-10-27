@@ -23,27 +23,27 @@ function CustomerPicker({ value, onChange }: { value: Customer | null; onChange:
   if (value) {
     return (
       <div className="flex items-center justify-between rounded-lg border border-slate-300 bg-white px-3 py-2">
-        <div>
-          <div className="font-medium">{value.name} <Badge value={value.type} /></div>
-          <div className="text-xs text-slate-500">
+        <div className="min-w-0 pr-2">
+          <div className="truncate font-medium">{value.name} <Badge value={value.type} /></div>
+          <div className="truncate text-xs text-slate-500">
             {value.phone} · {t("balance")}: {money(value.balance_paisa)} · {t("credit_limit")}: {money(value.credit_limit_paisa)}
           </div>
         </div>
-        <button className="text-sm text-slate-500 hover:text-red-600" onClick={() => onChange(null)}>✕</button>
+        <button className="shrink-0 p-1 text-sm text-slate-400 hover:text-red-600" onClick={() => onChange(null)}>✕</button>
       </div>
     );
   }
   return (
     <div className="relative">
       <Input placeholder={`${t("walk_in")} — ${t("choose_customer")}`} value={q}
-        onChange={(e) => setQ(e.target.value)} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)} />
+        onChange={(e) => setQ(e.target.value)} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 200)} />
       {open && data && data.length > 0 && (
         <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
           {data.map((c) => (
             <li key={c.id}>
               <button className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-slate-50"
                 onMouseDown={() => { onChange(c); setQ(""); }}>
-                <span>{c.name} <span className="text-slate-500">{c.phone}</span></span>
+                <span className="truncate pr-2">{c.name} <span className="text-slate-500 text-xs">{c.phone}</span></span>
                 <Badge value={c.type} />
               </button>
             </li>
@@ -73,6 +73,7 @@ export default function NewSale() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const paymentCardRef = useRef<HTMLDivElement>(null);
   const ds = useDebounced(search, 200);
   const { data: deliveryUsers } = useApi<User[]>(docType === "delivery" ? "/api/users?role=delivery" : null);
 
@@ -164,10 +165,10 @@ export default function NewSale() {
       <PageHeader
         title={t("new_sale")}
         actions={
-          <div className="flex rounded-lg border border-slate-300 bg-white p-0.5">
+          <div className="flex w-full sm:w-auto rounded-lg border border-slate-300 bg-white p-0.5 shadow-2xs">
             {(["invoice", "estimate", "delivery"] as DocType[]).map((d) => (
               <button key={d} onClick={() => setDocType(d)}
-                className={`rounded-md px-3 py-1.5 text-sm ${docType === d ? "bg-brand-600 text-white" : "text-slate-700"}`}>
+                className={`flex-1 sm:flex-initial rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition ${docType === d ? "bg-brand-600 text-white shadow-2xs" : "text-slate-700 hover:text-slate-900"}`}>
                 {t(d)}
               </button>
             ))}
@@ -187,17 +188,17 @@ export default function NewSale() {
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onSearchEnter(); } }} />
                 </Field>
                 {suggest.length > 0 && (
-                  <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+                  <ul className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl">
                     {suggest.map((p) => (
                       <li key={p.id}>
-                        <button className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-slate-50" onClick={() => addProduct(p)}>
-                          <span>
-                            {lang === "bn" && p.name_bn ? p.name_bn : p.name}
-                            <span className="ml-1 text-xs text-slate-500">{p.sku}</span>
+                        <button className="flex w-full items-center justify-between gap-2 px-3.5 py-2.5 text-left text-sm hover:bg-slate-50 transition border-b border-slate-50 last:border-0" onClick={() => addProduct(p)}>
+                          <span className="min-w-0">
+                            <span className="block truncate font-medium">{lang === "bn" && p.name_bn ? p.name_bn : p.name}</span>
+                            <span className="text-xs text-slate-500 font-mono">{p.sku}</span>
                           </span>
-                          <span className="text-right text-xs">
-                            <div className="font-medium">{money(price(p))}</div>
-                            <div className={p.stock_milli <= 0 ? "text-red-600" : "text-slate-500"}>{t("in_stock")}: {qty(p.stock_milli)}</div>
+                          <span className="text-right text-xs shrink-0">
+                            <div className="font-semibold text-slate-900">{money(price(p))}</div>
+                            <div className={p.stock_milli <= 0 ? "font-medium text-red-600" : "text-slate-500"}>{t("in_stock")}: {qty(p.stock_milli)}</div>
                           </span>
                         </button>
                       </li>
@@ -206,33 +207,47 @@ export default function NewSale() {
                 )}
               </div>
             </div>
-            <div className="mt-2 text-xs text-slate-500">{t("price_tier")}: <b>{t(wholesale ? "wholesale" : "retail")}</b></div>
+            <div className="mt-2 text-xs text-slate-500">{t("price_tier")}: <b className="text-slate-700">{t(wholesale ? "wholesale" : "retail")}</b></div>
           </Card>
 
           <Card title={`${t("items")} (${rows.length})`}>
             {rows.length === 0 ? (
-              <p className="py-6 text-center text-sm text-slate-500">{t("no_items")}</p>
+              <p className="py-8 text-center text-sm text-slate-500">{t("no_items")}</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {lines.map((l, i) => (
-                  <div key={l.product.id} className="grid grid-cols-12 items-center gap-2 rounded-lg border border-slate-100 p-2">
-                    <div className="col-span-12 sm:col-span-4">
-                      <div className="text-sm font-medium">{lang === "bn" && l.product.name_bn ? l.product.name_bn : l.product.name}</div>
-                      <div className="text-xs text-slate-500">{money(price(l.product))} / {t(l.product.unit)}</div>
+                  <div key={l.product.id} className="rounded-lg border border-slate-200/90 bg-white p-3 space-y-2 sm:space-y-0 sm:grid sm:grid-cols-12 sm:items-center sm:gap-2 shadow-2xs">
+                    {/* Item header on mobile */}
+                    <div className="flex items-start justify-between sm:col-span-4 sm:block">
+                      <div className="min-w-0 pr-2">
+                        <div className="font-medium text-sm text-slate-900 truncate">{lang === "bn" && l.product.name_bn ? l.product.name_bn : l.product.name}</div>
+                        <div className="text-xs text-slate-500">{money(price(l.product))} / {t(l.product.unit)}</div>
+                      </div>
+                      <button className="p-1 text-slate-400 hover:text-red-600 sm:hidden" aria-label="Remove"
+                        onClick={() => setRows(rows.filter((_, j) => j !== i))}>✕</button>
                     </div>
-                    <div className="col-span-4 sm:col-span-2">
-                      <Input inputMode="decimal" aria-label={t("qty")} value={l.qty}
-                        className={l.qtyMilli <= 0 ? "border-red-400" : ""}
-                        onChange={(e) => setRows(rows.map((r, j) => (j === i ? { ...r, qty: e.target.value } : r)))} />
+
+                    {/* Qty & Discount inputs */}
+                    <div className="grid grid-cols-2 gap-2 sm:contents">
+                      <div className="sm:col-span-2">
+                        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:hidden">{t("qty")}</span>
+                        <Input inputMode="decimal" aria-label={t("qty")} value={l.qty}
+                          className={l.qtyMilli <= 0 ? "border-red-400" : ""}
+                          onChange={(e) => setRows(rows.map((r, j) => (j === i ? { ...r, qty: e.target.value } : r)))} />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-slate-400 sm:hidden">{t("discount")}</span>
+                        <Input inputMode="decimal" placeholder="0" aria-label={t("discount")} value={l.discount}
+                          className={l.disc > l.gross || toPaisa(l.discount) === null ? "border-red-400" : ""}
+                          onChange={(e) => setRows(rows.map((r, j) => (j === i ? { ...r, discount: e.target.value } : r)))} />
+                      </div>
+                      <div className="col-span-2 flex items-center justify-between border-t border-slate-100 pt-2 sm:border-0 sm:pt-0 sm:col-span-3 sm:justify-end sm:text-right">
+                        <span className="text-xs text-slate-500 sm:hidden">{t("total")}:</span>
+                        <span className="text-sm font-bold tabular-nums text-slate-900">{money(l.net)}</span>
+                      </div>
+                      <button className="hidden sm:block sm:col-span-1 text-center text-slate-400 hover:text-red-600" aria-label="Remove"
+                        onClick={() => setRows(rows.filter((_, j) => j !== i))}>✕</button>
                     </div>
-                    <div className="col-span-4 sm:col-span-2">
-                      <Input inputMode="decimal" placeholder={t("discount")} aria-label={t("discount")} value={l.discount}
-                        className={l.disc > l.gross || toPaisa(l.discount) === null ? "border-red-400" : ""}
-                        onChange={(e) => setRows(rows.map((r, j) => (j === i ? { ...r, discount: e.target.value } : r)))} />
-                    </div>
-                    <div className="col-span-3 text-right text-sm font-semibold tabular-nums sm:col-span-3">{money(l.net)}</div>
-                    <button className="col-span-1 text-slate-400 hover:text-red-600" aria-label="Remove"
-                      onClick={() => setRows(rows.filter((_, j) => j !== i))}>✕</button>
                   </div>
                 ))}
               </div>
@@ -240,63 +255,66 @@ export default function NewSale() {
           </Card>
         </div>
 
-        <Card title={t(docType)} className="h-fit lg:sticky lg:top-4">
-          <dl className="space-y-1 text-sm">
-            <div className="flex justify-between"><dt>{t("subtotal")}</dt><dd className="tabular-nums">{money(subtotal)}</dd></div>
-            <div className="flex justify-between"><dt>{t("discount")}</dt><dd className="tabular-nums">- {money(discount)}</dd></div>
-            <div className="flex justify-between border-t pt-2 text-lg font-semibold"><dt>{t("total")}</dt><dd className="tabular-nums">{money(total)}</dd></div>
-          </dl>
+        {/* Payment Summary Sidebar */}
+        <div ref={paymentCardRef} className="space-y-4 lg:col-span-1">
+          <Card title={t(docType)} className="h-fit lg:sticky lg:top-4">
+            <dl className="space-y-1.5 text-sm">
+              <div className="flex justify-between text-slate-600"><dt>{t("subtotal")}</dt><dd className="tabular-nums font-medium">{money(subtotal)}</dd></div>
+              <div className="flex justify-between text-slate-600"><dt>{t("discount")}</dt><dd className="tabular-nums font-medium text-emerald-700">- {money(discount)}</dd></div>
+              <div className="flex justify-between border-t border-slate-200 pt-2.5 text-base sm:text-lg font-bold text-slate-900"><dt>{t("total")}</dt><dd className="tabular-nums">{money(total)}</dd></div>
+            </dl>
 
-          {docType === "invoice" && (
-            <div className="mt-4 space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <Field label={t("paid")}>
-                  <div className="flex gap-1">
-                    <Input inputMode="decimal" value={payTouched ? paid : paisaToInput(total)}
-                      onChange={(e) => { setPayTouched(true); setPaid(e.target.value); }} />
-                    <Button variant="secondary" type="button" onClick={() => { setPayTouched(false); setPaid(""); }}>{t("pay_full")}</Button>
-                  </div>
-                </Field>
-                <Field label={t("method")}>
-                  <Select value={method} onChange={(e) => setMethod(e.target.value)}>
-                    {["cash", "bkash", "nagad", "bank"].map((m) => <option key={m} value={m}>{t(m as "cash")}</option>)}
+            {docType === "invoice" && (
+              <div className="mt-4 space-y-3 border-t border-slate-100 pt-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
+                  <Field label={t("paid")}>
+                    <div className="flex gap-1.5">
+                      <Input inputMode="decimal" value={payTouched ? paid : paisaToInput(total)}
+                        onChange={(e) => { setPayTouched(true); setPaid(e.target.value); }} />
+                      <Button variant="secondary" type="button" className="shrink-0 text-xs px-2.5" onClick={() => { setPayTouched(false); setPaid(""); }}>{t("pay_full")}</Button>
+                    </div>
+                  </Field>
+                  <Field label={t("method")}>
+                    <Select value={method} onChange={(e) => setMethod(e.target.value)}>
+                      {["cash", "bkash", "nagad", "bank"].map((m) => <option key={m} value={m}>{t(m as "cash")}</option>)}
+                    </Select>
+                  </Field>
+                </div>
+                {method === "cash" ? (
+                  <Field label={t("tendered")} hint={change > 0 ? `${t("change")}: ${money(change)}` : undefined}>
+                    <Input inputMode="decimal" value={tendered} onChange={(e) => setTendered(e.target.value)} />
+                  </Field>
+                ) : (
+                  <Field label={t("reference")}><Input value={reference} onChange={(e) => setReference(e.target.value)} /></Field>
+                )}
+                <div className={`flex justify-between rounded-lg px-3 py-2 text-sm font-semibold ${due > 0 ? "bg-red-50 text-red-700 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"}`}>
+                  <span>{t("due")}</span><span className="tabular-nums">{money(due)}</span>
+                </div>
+              </div>
+            )}
+
+            {docType === "delivery" && (
+              <div className="mt-4 border-t border-slate-100 pt-3">
+                <Field label={t("assigned_to")}>
+                  <Select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
+                    <option value="">{t("none")}</option>
+                    {deliveryUsers?.map((u) => <option key={u.id} value={u.id}>{u.full_name}</option>)}
                   </Select>
                 </Field>
               </div>
-              {method === "cash" ? (
-                <Field label={t("tendered")} hint={change > 0 ? `${t("change")}: ${money(change)}` : undefined}>
-                  <Input inputMode="decimal" value={tendered} onChange={(e) => setTendered(e.target.value)} />
-                </Field>
-              ) : (
-                <Field label={t("reference")}><Input value={reference} onChange={(e) => setReference(e.target.value)} /></Field>
-              )}
-              <div className={`flex justify-between rounded-lg px-3 py-2 text-sm font-semibold ${due > 0 ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
-                <span>{t("due")}</span><span className="tabular-nums">{money(due)}</span>
-              </div>
-            </div>
-          )}
+            )}
 
-          {docType === "delivery" && (
-            <div className="mt-4">
-              <Field label={t("assigned_to")}>
-                <Select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-                  <option value="">{t("none")}</option>
-                  {deliveryUsers?.map((u) => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-                </Select>
-              </Field>
+            <div className="mt-3">
+              <Field label={`${t("notes")} (${t("optional")})`}><Input value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
             </div>
-          )}
-
-          <div className="mt-3">
-            <Field label={`${t("notes")} (${t("optional")})`}><Input value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
-          </div>
-          <div className="mt-4 space-y-2">
-            <ErrorText>{error}</ErrorText>
-            <Button className="w-full py-3 text-base" disabled={busy || invalid} onClick={submit}>
-              {t("save")} {t(docType)}
-            </Button>
-          </div>
-        </Card>
+            <div className="mt-4 space-y-2">
+              <ErrorText>{error}</ErrorText>
+              <Button className="w-full py-3 text-base font-semibold shadow-md" disabled={busy || invalid} onClick={submit}>
+                {t("save")} {t(docType)}
+              </Button>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -46,12 +46,12 @@ export function CustomerForm({ initial, onSaved, onClose }: { initial: Customer 
   return (
     <Modal open title={initial ? t("edit") : t("add")} onClose={onClose}
       footer={<><Button variant="secondary" onClick={onClose}>{t("cancel")}</Button><Button disabled={busy || !form.name} onClick={save}>{t("save")}</Button></>}>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label={t("name")}><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Field label={t("name")}><Input autoFocus value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
         <Field label={t("phone")}><Input inputMode="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
       </div>
       <Field label={t("address")}><Input value={form.address} onChange={(e) => set("address", e.target.value)} /></Field>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Field label={t("type")}>
           <Select disabled={!creditOk} value={form.type} onChange={(e) => set("type", e.target.value)}>
             {(["retail", "wholesale", "credit"] as const).map((x) => <option key={x} value={x}>{t(x)}</option>)}
@@ -61,8 +61,8 @@ export function CustomerForm({ initial, onSaved, onClose }: { initial: Customer 
         <Field label={`${t("opening_balance")} (৳)`}><Input disabled={!creditOk} inputMode="decimal" value={form.opening} onChange={(e) => set("opening", e.target.value)} /></Field>
       </div>
       <Field label={t("notes")}><Input value={form.notes} onChange={(e) => set("notes", e.target.value)} /></Field>
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} /> {t("active")}
+      <label className="flex items-center gap-2 text-sm text-slate-700">
+        <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} className="rounded" /> {t("active")}
       </label>
       <ErrorText>{err}</ErrorText>
     </Modal>
@@ -80,9 +80,9 @@ export default function Customers() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title={t("customers")} actions={can("customers.write") && <Button onClick={() => setEditing("new")}>{t("add")}</Button>} />
+      <PageHeader title={t("customers")} actions={can("customers.write") && <Button onClick={() => setEditing("new")}>＋ {t("add")}</Button>} />
       <Card>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           <Input className="sm:col-span-2" placeholder={`${t("search")}: ${t("name")}, ${t("phone")}`} value={q} onChange={(e) => setQ(e.target.value)} />
           <Select value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">{t("type")}: {t("all")}</option>
@@ -95,20 +95,25 @@ export default function Customers() {
         <Table head={[t("name"), t("phone"), t("type"), t("credit_limit"), t("balance"), ""]} empty={data?.length === 0}>
           {data?.map((c) => (
             <tr key={c.id} className={c.is_active ? "" : "opacity-50"}>
-              <td className={td}><Link className="font-medium text-brand-700 hover:underline" to={`/customers/${c.id}`}>{c.name}</Link><div className="text-xs text-slate-500">{c.address}</div></td>
-              <td className={td}>{c.phone}</td>
+              <td className={td}>
+                <Link className="font-semibold text-brand-700 hover:underline" to={`/customers/${c.id}`}>{c.name}</Link>
+                {c.address && <div className="text-xs text-slate-500 max-w-xs truncate">{c.address}</div>}
+              </td>
+              <td className={td}>{c.phone ? <a className="text-slate-700 hover:text-brand-700" href={`tel:${c.phone}`}>{c.phone}</a> : "—"}</td>
               <td className={td}><Badge value={c.type} /></td>
               <td className={tdNum}>{money(c.credit_limit_paisa)}</td>
-              <td className={`${tdNum} ${c.balance_paisa > 0 ? "font-semibold text-red-600" : ""}`}>{money(c.balance_paisa)}</td>
-              <td className={td}>
-                {can("customers.write") && <button className="text-sm text-brand-700 hover:underline" onClick={() => setEditing(c)}>{t("edit")}</button>}
-              </td>
+              <td className={`${tdNum} font-bold ${c.balance_paisa > 0 ? "text-red-600" : "text-emerald-700"}`}>{money(c.balance_paisa)}</td>
+              <td className={td}>{can("customers.write") && <button className="text-sm font-medium text-brand-700 hover:underline" onClick={() => setEditing(c)}>{t("edit")}</button>}</td>
             </tr>
           ))}
         </Table>
       </Card>
       {editing && (
-        <CustomerForm initial={editing === "new" ? null : editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
+        <CustomerForm
+          initial={editing === "new" ? null : editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => { setEditing(null); reload(); }}
+        />
       )}
     </div>
   );

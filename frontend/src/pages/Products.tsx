@@ -58,7 +58,7 @@ export default function Products() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title={t("products")} actions={can("products.write") && <Button onClick={() => open("new")}>{t("add")}</Button>} />
+      <PageHeader title={t("products")} actions={can("products.write") && <Button onClick={() => open("new")}>＋ {t("add")}</Button>} />
       <Card>
         <Input placeholder={`${t("search")}: ${t("name")}, ${t("sku")}, ${t("barcode")}`} value={q} onChange={(e) => setQ(e.target.value)} />
       </Card>
@@ -69,16 +69,16 @@ export default function Products() {
           {data?.map((p) => (
             <tr key={p.id} className={p.is_active ? "" : "opacity-50"}>
               <td className={td}>
-                <div className="font-medium">{lang === "bn" && p.name_bn ? p.name_bn : p.name}</div>
-                <div className="text-xs text-slate-500">{p.barcode}</div>
+                <div className="font-semibold text-slate-900">{lang === "bn" && p.name_bn ? p.name_bn : p.name}</div>
+                {p.barcode && <div className="text-xs text-slate-400 font-mono">{p.barcode}</div>}
               </td>
-              <td className={td}>{p.sku}</td>
-              <td className={td}>{p.category_name}</td>
+              <td className={td}><span className="font-mono text-xs sm:text-sm text-slate-600">{p.sku}</span></td>
+              <td className={td}><span className="text-xs sm:text-sm text-slate-600">{p.category_name ?? "—"}</span></td>
               <td className={tdNum}>{money(p.buy_price_paisa)}</td>
-              <td className={tdNum}>{money(p.retail_price_paisa)}</td>
+              <td className={`${tdNum} font-medium`}>{money(p.retail_price_paisa)}</td>
               <td className={tdNum}>{money(p.wholesale_price_paisa)}</td>
-              <td className={`${tdNum} ${p.stock_milli <= p.low_stock_milli ? "font-semibold text-red-600" : ""}`}>{qty(p.stock_milli)} {t(p.unit)}</td>
-              <td className={td}>{can("products.write") && <button className="text-sm text-brand-700 hover:underline" onClick={() => open(p)}>{t("edit")}</button>}</td>
+              <td className={`${tdNum} ${p.stock_milli <= p.low_stock_milli ? "font-bold text-red-600" : "font-medium text-slate-900"}`}>{qty(p.stock_milli)} {t(p.unit)}</td>
+              <td className={td}>{can("products.write") && <button className="text-sm font-medium text-brand-700 hover:underline" onClick={() => open(p)}>{t("edit")}</button>}</td>
             </tr>
           ))}
         </Table>
@@ -87,8 +87,8 @@ export default function Products() {
       <Modal open={editing !== null} title={editing === "new" ? t("add") : t("edit")} onClose={() => setEditing(null)}
         footer={<><Button variant="secondary" onClick={() => setEditing(null)}>{t("cancel")}</Button>
           <Button disabled={busy || !form.name || !form.sku} onClick={save}>{t("save")}</Button></>}>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={t("name")}><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label={t("name")}><Input autoFocus value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
           <Field label={t("name_bn")}><Input value={form.name_bn} onChange={(e) => set("name_bn", e.target.value)} /></Field>
           <Field label={t("sku")}><Input value={form.sku} onChange={(e) => set("sku", e.target.value)} /></Field>
           <Field label={t("barcode")}><Input value={form.barcode} onChange={(e) => set("barcode", e.target.value)} /></Field>
@@ -103,8 +103,8 @@ export default function Products() {
           <Field label={`${t("wholesale_price")} (৳)`}><Input inputMode="decimal" value={form.wholesale} onChange={(e) => set("wholesale", e.target.value)} /></Field>
           <Field label={t("low_stock_level")}><Input inputMode="decimal" value={form.low} onChange={(e) => set("low", e.target.value)} /></Field>
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} /> {t("active")}
+        <label className="flex items-center gap-2 text-sm text-slate-700 pt-1">
+          <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} className="rounded" /> {t("active")}
         </label>
         <ErrorText>{err}</ErrorText>
       </Modal>

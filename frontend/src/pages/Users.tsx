@@ -44,18 +44,21 @@ export default function Users() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title={t("users")} actions={editable && <Button onClick={() => open("new")}>{t("new_user")}</Button>} />
+      <PageHeader title={t("users")} actions={editable && <Button onClick={() => open("new")}>＋ {t("new_user")}</Button>} />
       <ErrorText>{error}</ErrorText>
       <Card>
         <Table head={[t("full_name"), t("username"), t("role"), t("phone"), t("active"), ""]}>
           {data?.map((u) => (
             <tr key={u.id} className={u.is_active ? "" : "opacity-50"}>
-              <td className={td}>{u.full_name}{u.id === me?.id && " ★"}</td>
-              <td className={td}>{u.username}</td>
-              <td className={`${td} capitalize`}>{u.role_name}</td>
-              <td className={td}>{u.phone}</td>
-              <td className={td}>{u.is_active ? "✓" : "✕"}</td>
-              <td className={td}>{editable && <button className="text-sm text-brand-700 hover:underline" onClick={() => open(u)}>{t("edit")}</button>}</td>
+              <td className={td}>
+                <span className="font-semibold text-slate-900">{u.full_name}</span>
+                {u.id === me?.id && <span className="ml-1.5 text-xs bg-brand-100 text-brand-800 font-medium px-1.5 py-0.5 rounded">You</span>}
+              </td>
+              <td className={td}><span className="font-mono text-xs sm:text-sm text-slate-600">@{u.username}</span></td>
+              <td className={`${td} capitalize`}><span className="font-medium text-slate-800">{u.role_name}</span></td>
+              <td className={td}>{u.phone || "—"}</td>
+              <td className={td}>{u.is_active ? <span className="text-emerald-600 font-bold">✓</span> : <span className="text-red-500 font-bold">✕</span>}</td>
+              <td className={td}>{editable && <button className="text-sm font-medium text-brand-700 hover:underline" onClick={() => open(u)}>{t("edit")}</button>}</td>
             </tr>
           ))}
         </Table>
@@ -63,10 +66,10 @@ export default function Users() {
       <Modal open={editing !== null} title={editing === "new" ? t("new_user") : t("edit")} onClose={() => setEditing(null)}
         footer={<><Button variant="secondary" onClick={() => setEditing(null)}>{t("cancel")}</Button>
           <Button disabled={!form.full_name || (editing === "new" && (!form.username || form.password.length < 6))} onClick={save}>{t("save")}</Button></>}>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={t("username")}><Input disabled={editing !== "new"} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} /></Field>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label={t("username")}><Input autoFocus disabled={editing !== "new"} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} /></Field>
           <Field label={t("full_name")}><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></Field>
-          <Field label={t("phone")}><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
+          <Field label={t("phone")}><Input inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
           <Field label={t("role")}>
             <Select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
               {ROLES.map((r) => <option key={r} value={r} className="capitalize">{r}</option>)}
@@ -77,8 +80,8 @@ export default function Users() {
           <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         </Field>
         {editing !== "new" && (
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} /> {t("active")}
+          <label className="flex items-center gap-2 text-sm text-slate-700 pt-1">
+            <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded" /> {t("active")}
           </label>
         )}
         <ErrorText>{err}</ErrorText>

@@ -17,23 +17,25 @@ export default function AuditPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("audit_log")} actions={
-        <Select className="w-48" value={entity} onChange={(e) => setEntity(e.target.value)}>
-          <option value="">{t("all")}</option>
-          {ENTITIES.map((e) => <option key={e} value={e}>{e}</option>)}
-        </Select>
+        <div className="w-full sm:w-56">
+          <Select value={entity} onChange={(e) => setEntity(e.target.value)}>
+            <option value="">{t("all")}</option>
+            {ENTITIES.map((e) => <option key={e} value={e}>{e}</option>)}
+          </Select>
+        </div>
       } />
       <Card>
         <Table head={[t("date"), "User", "Record", "Action", "Field", "Old", "New", t("reason")]} empty={data?.length === 0}>
           {data?.map((r) => (
             <tr key={r.id}>
-              <td className={td}>{dt(r.at)}</td>
-              <td className={td}>{r.user_name}</td>
-              <td className={td}>{r.entity}{r.entity_id ? ` #${r.entity_id}` : ""}</td>
-              <td className={td}>{r.action}</td>
-              <td className={td}>{r.field}</td>
-              <td className={`${td} text-slate-500`}>{r.old_value}</td>
-              <td className={td}>{r.new_value}</td>
-              <td className={`${td} max-w-xs truncate`}>{r.reason}</td>
+              <td className={td}><span className="text-xs text-slate-500 whitespace-nowrap">{dt(r.at)}</span></td>
+              <td className={td}><span className="font-medium text-slate-800">{r.user_name || "—"}</span></td>
+              <td className={td}><span className="font-mono text-xs">{r.entity}{r.entity_id ? ` #${r.entity_id}` : ""}</span></td>
+              <td className={td}><span className="inline-block rounded px-1.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700">{r.action}</span></td>
+              <td className={td}><span className="text-xs text-slate-600">{r.field || "—"}</span></td>
+              <td className={`${td} text-slate-500 font-mono text-xs max-w-xs truncate`}>{r.old_value || "—"}</td>
+              <td className={`${td} text-slate-800 font-mono text-xs max-w-xs truncate`}>{r.new_value || "—"}</td>
+              <td className={`${td} max-w-xs truncate text-xs text-slate-600`}>{r.reason || "—"}</td>
             </tr>
           ))}
         </Table>
