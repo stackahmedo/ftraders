@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html[lang="bn"] body {
+  font-family: "Noto Sans Bengali", Inter, system-ui, sans-serif;
+}
+
+/* bigger tap targets on phones */
+@media (max-width: 640px) {
+  input, select, button { min-height: 40px; }
+}

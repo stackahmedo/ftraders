@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+env/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Databases & Environment
+.env
+backend/.env
+*.db
+backend/*.db
+backend/*.db-*
+backend/*.sqlite3
+
+# Frontend & Node
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+*.tsbuildinfo
+.npm/
+
+# OS & IDE
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+.vscode/
+.idea/
